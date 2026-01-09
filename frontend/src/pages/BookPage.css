@@ -371,3 +371,128 @@ body {
 .search::placeholder {
   color: #9ca3af;
 }
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 280px;
+  max-width: 350px;
+  background-color: #4caf50;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateX(100%);
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 15px;
+  animation: slideIn 0.5s forwards;
+}
+
+/* Success / Error */
+.toast.error {
+  background-color: #f44336;
+}
+
+/* Slide in */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 0.95;
+    transform: translateX(0);
+  }
+}
+
+/* Slide + fade out */
+.toast.fadeOut {
+  animation: fadeOut 0.5s forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 0.95;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Icon trước message */
+.toast::before {
+  content: "";
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.toast.error::before {
+  content: "";
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  gap: 8px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.pagination button {
+  padding: 6px 14px;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  transition: all 0.25s ease;
+  /* smooth transition */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination button:hover {
+  background: #007aff;
+  /* màu xanh kiểu Apple */
+  color: #fff;
+  transform: translateY(-2px);
+  /* trượt lên nhẹ */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pagination button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+  background: #e0e0e0;
+  color: #999;
+  box-shadow: none;
+}
+
+.pagination span {
+  padding: 6px 12px;
+  font-weight: 600;
+  color: #555;
+  transition: all 0.3s ease;
+}
+
+/* Active page highlight (optional if you want clickable numbers) */
+.pagination .active {
+  background: #007aff;
+  color: #fff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
