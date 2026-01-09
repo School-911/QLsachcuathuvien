@@ -23,19 +23,65 @@ export default function BookPage() {
   const [imageMode, setImageMode] = useState("link");
   const [imageFile, setImageFile] = useState(null);
   const [keyword, setKeyword] = useState("");
-
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
   const load = async () => {
-    const res = await axios.get("http://localhost:4001/api/books");
-    setBooks(res.data);
+    const res = await axios.get(`http://localhost:4001/api/books`);
+    const allBooks = res.data || [];
+    setTotalPages(Math.ceil(allBooks.length / itemsPerPage));
+
+    const start = (page - 1) * itemsPerPage;
+    const end = page * itemsPerPage;
+    setBooks(allBooks.slice(start, end));
   };
 
   useEffect(() => {
     load();
   }, []);
+  const showToast = (message, type = "success", bookTitle = "") => {
+    let displayMessage = message;
+
+    // Tùy chỉnh message sống động
+    if (type === "success" && bookTitle) {
+      displayMessage = `Sách "${bookTitle}" đã ${message.toLowerCase()}!`;
+    } else if (type === "error" && bookTitle) {
+      displayMessage = `${message}`;
+    }
+
+    setToast({ show: true, message: displayMessage, type, fadeOut: false });
+
+    // Fade out
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, fadeOut: true }));
+    }, 4500);
+
+    setTimeout(() => {
+      setToast({ show: false, message: "", type: "success", fadeOut: false });
+    }, 5000);
+  };
+  const setPageAndLoad = (p) => {
+    setPage(p);
+    loadPage(p);
+  };
+
+  const loadPage = async (p) => {
+    const res = await axios.get(`http://localhost:4001/api/books`);
+    const allBooks = res.data || [];
+    const start = (p - 1) * itemsPerPage;
+    const end = p * itemsPerPage;
+    setBooks(allBooks.slice(start, end));
+  };
 
   const openEdit = (book) => {
     setForm({
       id: book.id,
+      book_code: book.book_code || "",
       title: book.title || "",
       author: book.author || "",
       publisher: book.publisher || "",
@@ -64,13 +110,22 @@ export default function BookPage() {
       formData.append("image_url", form.image_url);
     }
 
-    await axios.post("http://localhost:4001/api/books", formData);
+    try {
+      const res = await axios.post("http://localhost:4001/api/books", formData);
+      showToast("Thêm thành công", "success", form.title);
 
-    setShowAdd(false);
-    setForm(emptyForm);
-    setImageFile(null);
-    setImageMode("link");
-    load();
+      setShowAdd(false);
+      setForm(emptyForm);
+      setImageFile(null);
+      setImageMode("link");
+      load();
+    } catch (err) {
+      showToast(
+        err.response?.data?.message || err.message,
+        "error",
+        form.title
+      );
+    }
   };
 
   const updateBook = async () => {
@@ -89,28 +144,48 @@ export default function BookPage() {
       formData.append("image_url", form.image_url);
     }
 
-    await axios.put(`http://localhost:4001/api/books/${form.id}`, formData);
+    try {
+      const res = await axios.put(
+        `http://localhost:4001/api/books/${form.id}`,
+        formData
+      );
 
-    const res = await axios.get("http://localhost:4001/api/books");
-    setBooks(res.data);
+      showToast("Cập nhật thành công", "success", form.title);
 
-    const updated = res.data.find((b) => b.id === form.id);
-    setSelected(updated || null);
+      const allBooks = await axios.get("http://localhost:4001/api/books");
+      setBooks(allBooks.data);
 
-    setShowEdit(false);
-    setForm(emptyForm);
-    setImageFile(null);
-    setImageMode("link");
+      const updated = allBooks.data.find((b) => b.id === form.id);
+      setSelected(updated || null);
+
+      setShowEdit(false);
+      setForm(emptyForm);
+      setImageFile(null);
+      setImageMode("link");
+    } catch (err) {
+      showToast(err.response?.data?.message || err.message, "error");
+    }
   };
 
   const deleteBook = async () => {
     if (!window.confirm("Bạn chắc chắn muốn xóa sách này?")) return;
-    await axios.delete(`http://localhost:4001/api/books/${form.id}`);
-    setShowEdit(false);
-    setSelected(null);
-    setForm(emptyForm);
-    load();
+
+    try {
+      const res = await axios.delete(
+        `http://localhost:4001/api/books/${form.id}`
+      );
+
+      showToast("Xóa thành công", "success", selected.title);
+
+      setShowEdit(false);
+      setSelected(null);
+      setForm(emptyForm);
+      load();
+    } catch (err) {
+      showToast(err.response?.data?.message || err.message, "error");
+    }
   };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -128,6 +203,14 @@ export default function BookPage() {
   };
   return (
     <div className="book-container">
+      {toast.show && (
+        <div
+          className={`toast ${toast.type} ${toast.fadeOut ? "fadeOut" : ""}`}
+        >
+          {toast.message}
+        </div>
+      )}
+
       <div className="top-bar">
         <input
           className="search"
@@ -171,6 +254,22 @@ export default function BookPage() {
             </div>
           </div>
         ))}
+      </div>
+      <div className="pagination">
+        <button disabled={page === 1} onClick={() => setPageAndLoad(page - 1)}>
+          &laquo; Trước
+        </button>
+
+        <span>
+          Trang {page} / {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPageAndLoad(page + 1)}
+        >
+          Tiếp &raquo;
+        </button>
       </div>
 
       {/* DETAIL MODAL */}
@@ -321,7 +420,7 @@ export default function BookPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h3>Cập nhật sách</h3>
-            <div class="form-group">
+            <div className="form-group">
               <label>Mã sách</label>
               <input
                 type="text"
