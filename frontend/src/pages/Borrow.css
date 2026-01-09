@@ -1,0 +1,23 @@
+.borrow-page {
+  padding: 24px;
+}
+
+.borrow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.borrow-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.borrow-header button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 500;
+}

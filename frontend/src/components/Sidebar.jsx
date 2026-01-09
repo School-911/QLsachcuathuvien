@@ -23,7 +23,7 @@ export default function Sidebar() {
         <NavLink to="/" end>🏠 <span>Trang chủ</span></NavLink>
         <NavLink to="/books">📚 <span>Sách</span></NavLink>
         <NavLink to="/users">👤 <span>Người dùng</span></NavLink>
-        <NavLink to="/stats">📊 <span>Thống kê</span></NavLink>
+        <NavLink to="/borrows">📊 <span>Mượn sách</span></NavLink>
       </nav>
 
       <div className="logout">
